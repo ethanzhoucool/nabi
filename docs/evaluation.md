@@ -17,7 +17,7 @@ In each trial, the experimenter names a target. The user selects it with the gla
 For every trial we log:
 
 - the named target
-- the object on the selection card at the moment of the pinch
+- the object under the dot at the moment of the pinch
 - the object matched in the overhead view
 - whether the grasp and the handover succeeded
 - timestamps for the confirm pinch, the grasp and arrival at the handover point
@@ -35,11 +35,11 @@ Each failure is put into one of five groups: selection, matching, grasp, handove
 | Cross-view match | The overhead match is the confirmed object | 95% or more |
 | Pick and handover | The object reaches the handover point and is released on the pinch | 80% or more |
 | Time | Median time from the confirm pinch to arrival at the handover point | 25 s or less |
-| Stopping | 20 separate tests of the stop pinch and the power switch during motion, timed from the overhead video | Every test stops within 0.5 s |
+| Stopping | 20 separate tests of the stop pinch and the emergency stop button during motion, timed from the overhead video | Every test stops within 0.5 s |
 | Cost | Receipts for all purchased parts | Under CA$2,000 |
 
 ## User feedback
 
-Once Western's research ethics board approves the study, occupational therapists and people with limited hand mobility will each use the system for a short session. Afterwards they fill in the System Usability Scale. The target is 68 or higher, which is the usual benchmark for average usability.
+Once Western's research ethics board approves the study, occupational therapists and people with limited hand mobility will each use the system for a short session. We log how often the Neural Band registers each person's pinch, and afterwards they fill in the System Usability Scale. The target is 68 or higher, which is the usual benchmark for average usability.
 
 None of this happens before approval.

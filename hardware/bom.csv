@@ -1,12 +1,12 @@
 Item,Purpose,Qty,Unit price (CAD),Line total (CAD),Supplier,Source,Notes
 Meta Ray-Ban Display with Meta Neural Band,"Camera, in-lens display and gesture input",1,1149.00,1149.00,Meta Store Canada,https://www.meta.com/ca/ai-glasses/meta-ray-ban-display/,Canadian price per https://mobilesyrup.com/2026/09/23/meta-ray-ban-display-launch-in-canada-for-1149/
-SO-ARM101 Pro servo kit,"12 V follower arm and 7.4 V leader arm servos, motor boards, cables",1,336.00,336.00,Seeed Studio,https://www.cnx-software.com/?p=149841,Estimate: US$240 launch price at 1.40 CAD/USD. Printed parts not included
-12 V 5 A DC power supply,Follower arm power,1,25.00,25.00,TBD,,Estimate. The SO-ARM100 BOM calls for 5 A or more with 12 V servos
+SO-ARM101 Pro Servo Motor Kit,"Servos for the 12 V follower arm and 7.4 V leader arm, two driver boards, cables",1,349.86,349.86,Seeed Studio,https://www.seeedstudio.com/SO-101-Low-Cost-AI-Arm-Kit-Pro-p-6427.html,US$249.90 at 1.40 CAD/USD. Printed parts not included
+12 V 5 A DC power supply,Follower arm power,1,30.36,30.36,RobotShop Canada,https://ca.robotshop.com/products/power-supply-12vdc-5a,Seeed lists the follower arm's supply as 12 V 2 A. The SO-ARM100 BOM calls for 5 A or more with 12 V servos
 "PLA filament, 1.75 mm, 1 kg, white",Arm parts and custom mounts,2,19.99,39.98,3D Printing Canada,https://3dprintingcanada.com/products/white-canadian-made-basic-pla-filament-1-75mm-1kg,
-1080p USB webcam,Overhead view of the workspace,1,40.00,40.00,TBD,,Estimate
-32 x 32 mm UVC USB camera module,Wrist view for the learned grasp policy,1,30.00,30.00,TBD,,Estimate
-Inline DC power switch,Cuts power to the follower arm,1,15.00,15.00,TBD,,Estimate. Rated for at least 5 A at 12 V
+Logitech C270 HD Webcam,Overhead view of the workspace,1,39.99,39.99,Logitech Canada,https://www.logitech.com/en-ca/shop/p/c270-hd-webcam.960-000694,
+"RGB USB Camera, 100 degree, 720p",Wrist view for the learned grasp policy,1,42.00,42.00,Seeed Studio,https://www.seeedstudio.com/Camera-Module-OV9732-1MP-100-USB2-0-USB2-0-L38-W38-H16-05mm-p-6982.html,US$30.00 at 1.40 CAD/USD. Sold for the SO-ARM101
+"Emergency stop button, 22 mm, latching, 2NC, 10 A",Cuts power to the follower arm,1,38.06,38.06,Bearings Canada,https://bearingscanada.com/products/2nc-22mm-red-emergency-stop-push-button-switch-lat,Mounted in a printed enclosure
 Shipping,,1,50.00,50.00,,,"Estimate, including duties on the Seeed order"
-Subtotal,,,,1684.98,,,
-HST (13%),,,,219.05,,,
-Total,,,,1904.03,,,
+Subtotal,,,,1739.25,,,
+HST (13%),,,,226.10,,,
+Total,,,,1965.35,,,
