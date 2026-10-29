@@ -6,7 +6,7 @@ The full list with prices and sources is in [bom.csv](bom.csv). Prices were chec
 
 ## Arm
 
-LookGrab uses the SO-101 arm from the [SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100) project, which is released under Apache-2.0. Its parts are printed from the upstream STL files using the print settings in that repository.
+Nabi uses the SO-101 arm from the [SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100) project, which is released under Apache-2.0. Its parts are printed from the upstream STL files using the print settings in that repository.
 
 The servos come from the SO-ARM101 Pro kit. The follower arm, which does the picking, uses 12 V STS3215 servos rated at 30 kg·cm, and Seeed lists its payload as 500 g. The leader arm uses 7.4 V servos and is only plugged in when recording demonstrations for the learned grasp policy.
 

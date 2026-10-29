@@ -1,6 +1,6 @@
 # Safety
 
-LookGrab puts a moving robot arm near a person who may not be able to get out of its way. This page lists the hazards we know about and how each one is handled. It will be reviewed again before anyone outside the project team uses the system.
+Nabi puts a moving robot arm near a person who may not be able to get out of its way. This page lists the hazards we know about and how each one is handled. It will be reviewed again before anyone outside the project team uses the system.
 
 ## Hazards and controls
 

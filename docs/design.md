@@ -1,6 +1,6 @@
 # Design notes
 
-How LookGrab is meant to work, and why each part was chosen. This will change as the build goes on.
+How Nabi is meant to work, and why each part was chosen. This will change as the build goes on.
 
 ## Goals
 

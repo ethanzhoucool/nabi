@@ -1,18 +1,18 @@
-# LookGrab
+# Nabi
 
 Look at an object on the table, pinch your fingers, and a robot arm picks it up and hands it to you.
 
-LookGrab is an open-source robot arm you control by looking and pinching, with nothing to hold and nothing to type. Meta Ray-Ban Display glasses see what you're facing, and the Meta Neural Band wristband picks up the pinch. The arm is the open-source SO-101. All of the parts together cost just under CA$2,000.
+Nabi is an open-source robot arm you control by looking and pinching, with nothing to hold and nothing to type. Meta Ray-Ban Display glasses see what you're facing, and the Meta Neural Band wristband picks up the pinch. The arm is the open-source SO-101. All of the parts together cost just under CA$2,000.
 
 The project is at the design stage and nothing has been built yet. For now the repository holds the plan and a priced parts list. Code and CAD files will be added as the build goes on.
 
 ## Why
 
-Telling a robot which object to pick up usually means a controller, a touchscreen or a typed command. LookGrab tries something more direct: you look at the object and pinch. The glasses and wristband that make this possible are now consumer products.
+Telling a robot which object to pick up usually means a controller, a touchscreen or a typed command. Nabi tries something more direct: you look at the object and pinch. The glasses and wristband that make this possible are now consumer products.
 
 The application with the most to gain is accessibility. For someone with limited reach, such as a wheelchair user with limited shoulder movement, a phone or a remote at the far side of a table often means asking someone else to pass it. Wheelchair-mounted assistive arms can do this, but they have been quoted at over $40,000 ([NIBIB](https://www.nibib.nih.gov/sites/default/files/R-ARM.pdf)). Research at the University of Utah, funded by Meta, found that wrist muscle signals could still drive a virtual hand for people who couldn't extend their fingers ([Meta](https://www.meta.com/en-gb/blog/university-of-utah-accessibility-research-meta-neural-band/)). Whether the Neural Band's pinch works as well for those users is one of the questions this project will test.
 
-Choosing objects for a robot by looking at them is not a new idea. A 2018 system built from eye-tracking glasses, a depth camera and a robot arm completed 96% of its pick-and-place tasks ([arXiv:1809.08095](https://arxiv.org/abs/1809.08095)). It ran on lab equipment. LookGrab tests whether off-the-shelf consumer hardware can now do the same job at a small fraction of the cost, with every design file published.
+Choosing objects for a robot by looking at them is not a new idea. A 2018 system built from eye-tracking glasses, a depth camera and a robot arm completed 96% of its pick-and-place tasks ([arXiv:1809.08095](https://arxiv.org/abs/1809.08095)). It ran on lab equipment. Nabi tests whether off-the-shelf consumer hardware can now do the same job at a small fraction of the cost, with every design file published.
 
 ## How it works
 
