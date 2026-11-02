@@ -44,7 +44,7 @@ The first version uses scripted grasps. A learned grasp policy, trained with [Le
 | USB webcam and wrist camera | Overhead and wrist views | 82 |
 | Emergency stop button | Cuts power to the arm | 38 |
 
-With shipping and 13% HST the total comes to CA$1,965. Sources and notes for every line are in [hardware/bom.csv](hardware/bom.csv). You also need an iPhone on iOS 17.2 or later, a laptop and access to a 3D printer.
+With shipping and 13% HST the total comes to CA$1,965. Sources and notes for every line are in [hardware/bom.csv](hardware/bom.csv), and [hardware/README.md](hardware/README.md) covers the arm, the wiring and the custom parts. You also need an iPhone on iOS 17.2 or later, a laptop and access to a 3D printer.
 
 ## Testing plan
 
