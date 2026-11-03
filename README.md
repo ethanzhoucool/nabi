@@ -35,7 +35,7 @@ The first version uses scripted grasps. A learned grasp policy, trained with [Le
 
 ## Hardware
 
-| Part | Role | Approx. CAD |
+| Part | Role | Approx. CA$ |
 |---|---|---|
 | Meta Ray-Ban Display with Meta Neural Band | Camera, in-lens display, gesture input | 1,149 |
 | SO-ARM101 Pro servo kit | 12 V follower arm, plus a leader arm for recording demonstrations | 350 |
@@ -43,6 +43,7 @@ The first version uses scripted grasps. A learned grasp policy, trained with [Le
 | PLA filament, 2 kg | Arm parts and custom mounts | 40 |
 | USB webcam and wrist camera | Overhead and wrist views | 82 |
 | Emergency stop button | Cuts power to the arm | 38 |
+| Shipping | Estimate, including duties on the Seeed order | 50 |
 
 With shipping and 13% HST the total comes to CA$1,965. Sources and notes for every line are in [hardware/bom.csv](hardware/bom.csv), and [hardware/README.md](hardware/README.md) covers the arm, the wiring and the custom parts. You also need an iPhone on iOS 17.2 or later, a laptop and access to a 3D printer.
 
@@ -55,7 +56,7 @@ Ten light household objects, set out four to six at a time in five layouts, for 
 | The confirmed object is the one the user meant | 90% |
 | The overhead camera finds the same object | 95% |
 | Pick and handover succeed | 80% |
-| Time from confirming to handover | 25 s or less |
+| Median time from confirming to handover | 25 s or less |
 | The arm stops on a stop pinch or the emergency stop button | Every time, within 0.5 s |
 
 The full protocol is in [docs/evaluation.md](docs/evaluation.md). Testing with people who have limited hand mobility will only start after ethics approval.
