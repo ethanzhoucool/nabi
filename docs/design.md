@@ -45,7 +45,7 @@ Nobody has published how well this lines up on these glasses, so it is the first
 
 The glasses and the overhead camera see the table from different angles, so the selection has to be matched across the two views. The laptop runs the same detector on the overhead image and keeps detections with the same label. If more than one is left (two cups, say), it compares image embeddings of the crops and picks the closest. When the top two are too close to call, the glasses show both and the user swipes to choose.
 
-Four ArUco markers at known spots on a printed table mat give a homography from the overhead image to the table surface. The arm's base sits at a marked position on the same mat, so a point on the table converts straight to arm coordinates. The first version assumes one grasp height per object type rather than measuring depth.
+Four ArUco markers at known spots on a [printed table mat](../hardware/README.md#custom-parts) give a homography from the overhead image to the table surface. The arm's base sits at a marked position on the same mat, so a point on the table converts straight to arm coordinates. The first version assumes one grasp height per object type rather than measuring depth.
 
 ## Picking and handing over
 
@@ -61,7 +61,7 @@ Inverse kinematics uses the arm's published URDF model.
 
 Version 2 replaces steps 2 and 3 with a learned policy (ACT or SmolVLA in LeRobot), trained on demonstrations recorded by moving the leader arm by hand. That is deliberately the second step. In a 2026 benchmark on the SO-101, both policies succeeded on roughly a third of attempts across four tabletop tasks, even after 100 demonstrations per task ([arXiv:2606.08881](https://arxiv.org/abs/2606.08881)). A scripted grasp on simple shapes should do better than that, and it gives the project a working baseline.
 
-The follower arm's 12 V servos are rated at 30 kg·cm, and Seeed lists a 500 g payload. How much it can actually lift at full reach is the first thing to measure, and the object list for testing gets fixed after that.
+The follower arm's 12 V servos are rated at 30 kg·cm, and Seeed lists a 500 g payload. How much it can actually lift at full reach is the first thing to measure, and the [object list for testing](evaluation.md#setup) gets fixed after that.
 
 ## Risks
 

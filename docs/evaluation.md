@@ -1,12 +1,12 @@
 # Evaluation plan
 
-The first round of testing is done by the project team. Testing with people who have limited hand mobility needs ethics approval, so it is described separately at the end.
+The first round of testing is done by the project team. Testing with people who have limited hand mobility needs ethics approval, so it is described separately at the end. Every session follows the [rules for testing](safety.md#rules-for-testing) in the safety notes.
 
 ## Setup
 
 The arm is clamped at a marked spot on the ArUco table mat. The user sits at the table facing the workspace, with the objects 50 to 80 cm away.
 
-The starting object list is a TV remote, a phone, a pill bottle, a plastic cup, a granola bar, a glasses case, a pack of tissues, a hairbrush, a small notebook and a lip balm. It may change once the arm's payload has been measured.
+The starting object list is a TV remote, a phone, a pill bottle, a plastic cup, a granola bar, a glasses case, a pack of tissues, a hairbrush, a small notebook and a lip balm. It may change once the [arm's payload](design.md#picking-and-handing-over) has been measured.
 
 There are five fixed layouts with four to six objects each. Each layout is photographed so it can be set up the same way every time.
 
