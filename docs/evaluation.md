@@ -35,7 +35,7 @@ Each failure is put into one of five groups: selection, matching, grasp, handove
 | Cross-view match | The overhead match is the confirmed object | 95% or more |
 | Pick and handover | The object reaches the handover point and is released on the pinch | 80% or more |
 | Time | Median time from the confirm pinch to arrival at the handover point | 25 s or less |
-| Stopping | 20 separate tests of the stop pinch and the emergency stop button during motion, timed from the overhead video | Every test stops within 0.5 s |
+| Stopping | 20 separate tests of the stop pinch, the phone app's stop button and the emergency stop button during motion, timed from the overhead video | Every test stops within 0.5 s |
 | Cost | Receipts for all purchased parts | Under CA$2,000 |
 
 ## User feedback
