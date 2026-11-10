@@ -26,8 +26,10 @@ The hardware sets a few limits:
 
 - The toolkit streams the glasses' camera over Bluetooth at up to 720×1280 and 30 fps. One developer measured 504×896 at 29 to 32 fps from a Ray-Ban Display, with display updates taking 40 to 100 ms while streaming ([amanshah0729/vision](https://github.com/amanshah0729/vision)).
 - There is no eye tracking, so head direction stands in for gaze.
-- Apps only receive taps and swipes from the Neural Band, not the raw muscle signal.
+- Apps only receive Neural Band gestures as events, through the toolkit's beta Inputs capability: a swipe arrives as a direction and a pinch as "select". The raw muscle signal isn't available.
 - The display is 600×600 pixels in the right lens and covers only a small part of the view. It isn't anchored to the world, so anything drawn over a real object has to be lined up by calibration.
+- The display API lays out text, images and buttons with FlexBox and replaces the whole screen on every update. Nothing can be placed at an exact pixel, so the dot is drawn into a 600×600 image on the phone and sent as one picture ([display overview](https://wearables.developer.meta.com/docs/develop/dat/display-overview/)).
+- Meta lists a known issue with combining camera capture and the display on the Ray-Ban Display ([known issues](https://wearables.developer.meta.com/docs/develop/dat/knownissues/)). The [build plan](plan.md#what-the-glasses-can-do) tests this first.
 
 Selection works like a red dot sight. The user turns their head so the object sits behind the display. Each frame goes through an object detector (a YOLO-family model converted to Core ML), and every detection gets a score based on how close it is to the display's line of sight and how confident the detector is. The best one becomes the candidate once it has stayed on top for about half a second, which keeps the dot from jumping between objects.
 
@@ -71,5 +73,7 @@ The follower arm's 12 V servos are rated at 30 kg·cm, and Seeed lists a 500 g p
 | The wrong object gets selected | The label shows next to the dot before anything moves, swiping corrects it, and the arm never moves without a pinch |
 | The dot doesn't line up with the real object | Recalibrate for each wearer. If that isn't enough, switch to a live camera view with a box |
 | Scripted grasps fail on some shapes | Limit version 1 to shapes that work, log the failures, and use them to train the learned policy |
-| The toolkit is a developer preview | The prototype runs on our own glasses in Developer Mode. It doesn't need to be published |
+| Neural Band input is still a beta feature in the toolkit | The prototype runs on our own glasses in Developer Mode and isn't published, so beta features are allowed. The touchpad and the phone app are backups |
+| The display can't keep up with the camera stream | Show a still card of candidates with labels instead of a moving dot, or show them on the phone. See the decision table in the [build plan](plan.md#phase-1-glasses-test-nov-17-to-dec-7) |
+| A pinch to stop is the same event as a pinch to confirm | Any pinch while the arm moves means stop. The phone app has a stop button, and the hardware emergency stop stays in reach |
 | The arm is too weak | Measure payload first and choose test objects to fit |

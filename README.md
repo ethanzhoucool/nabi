@@ -4,7 +4,7 @@ Look at an object on the table, pinch your fingers, and a robot arm picks it up 
 
 Nabi is an open-source robot arm you control by looking and pinching, with nothing to hold and nothing to type. Meta Ray-Ban Display glasses see what you're facing, and the Meta Neural Band wristband picks up the pinch. The arm is the open-source SO-101. All of the parts together cost just under CA$2,000.
 
-The project is at the design stage and nothing has been built yet. For now the repository holds the plan and a priced parts list. Code and CAD files will be added as the build goes on.
+In November 2026 Nabi received a CA$2,000 grant from Western University to buy the parts, and the build is starting. Nothing has been built yet. For now the repository holds the design, a priced parts list and a [build plan](docs/plan.md) with dates. Code and CAD files will be added as the build goes on.
 
 ## Why
 
@@ -67,9 +67,13 @@ The arm runs on small hobby servos and moves slowly. It hands objects over at ta
 
 ## Roadmap
 
+The phases, dates and decision points are in [docs/plan.md](docs/plan.md).
+
+- [ ] Order parts and set up the toolkit with Meta's mock device
 - [ ] Print, assemble and calibrate both arms in LeRobot
 - [ ] iPhone app showing the glasses' camera feed and a test dot on the display
-- [ ] Test how well a calibrated dot lines up with real objects
+- [ ] Test streaming, display updates and Neural Band input together, and how well a calibrated dot lines up with real objects
+- [ ] Submit the ethics application
 - [ ] Object detection and the selection dot
 - [ ] Neural Band confirm and stop
 - [ ] Overhead camera calibration with ArUco markers
@@ -81,7 +85,7 @@ The arm runs on small hobby servos and moves slowly. It hands objects over at ta
 ## Repository layout
 
 ```
-docs/       design notes, test plan, safety
+docs/       design notes, build plan, test plan, safety
 hardware/   bill of materials, wiring, custom parts
 ```
 
