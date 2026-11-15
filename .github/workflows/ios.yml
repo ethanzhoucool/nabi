@@ -1,0 +1,63 @@
+name: iOS app
+
+on:
+  push:
+    paths: ["app/**", ".github/workflows/ios.yml"]
+  pull_request:
+    paths: ["app/**", ".github/workflows/ios.yml"]
+  workflow_dispatch:
+
+jobs:
+  build-and-run:
+    # Standard GitHub-hosted runners are free for public repositories.
+    # Meta's toolkit 1.0.1 needs Xcode 26.4 or newer, which macos-15 doesn't have.
+    runs-on: macos-26
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode and simulators
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available | grep -i iphone | head -5
+
+      - name: Generate the Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build for the iOS Simulator
+        run: |
+          set -o pipefail
+          xcodebuild -project Nabi.xcodeproj -scheme Nabi \
+            -sdk iphonesimulator -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            build | tail -60
+
+      - name: Run in a simulator and take screenshots
+        run: |
+          set -x
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for r in d for x in d[r] if x['name'].startswith('iPhone')))")
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl bootstatus "$DEVICE" -b
+          APP=build/Build/Products/Debug-iphonesimulator/Nabi.app
+          xcrun simctl install "$DEVICE" "$APP"
+          mkdir -p ../shots
+          # --demo makes the app swipe right, pinch to lock, then swipe right again.
+          xcrun simctl launch --console-pty "$DEVICE" org.nabi.app --demo > ../shots/console.log 2>&1 &
+          for t in 05 09 13 17; do
+            sleep 4
+            xcrun simctl io "$DEVICE" screenshot "../shots/t${t}s.png"
+          done
+          sleep 2
+          cat ../shots/console.log || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: simulator-screenshots
+          path: shots/

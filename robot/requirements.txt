@@ -1,0 +1,4 @@
+# Python 3.12 (LeRobot 0.7.0 requires >=3.12; its install guide uses 3.12).
+# Top-level pins. requirements-lock.txt holds the full resolved set from pip freeze.
+lerobot[feetech,hardware]==0.7.0
+pytest==9.1.1

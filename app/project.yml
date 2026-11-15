@@ -1,0 +1,45 @@
+name: Nabi
+options:
+  bundleIdPrefix: org.nabi
+  deploymentTarget:
+    iOS: "17.2"
+packages:
+  MWDAT:
+    url: https://github.com/facebook/meta-wearables-dat-ios
+    exactVersion: 1.0.1
+targets:
+  Nabi:
+    type: application
+    platform: iOS
+    sources: [NabiApp]
+    info:
+      path: NabiApp/Info.plist
+    entitlements:
+      path: NabiApp/Nabi.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.nabi.app
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        # No Meta app ID is needed with the mock device; "0" means "none".
+        META_APP_ID: "0"
+        CLIENT_TOKEN: ""
+    dependencies:
+      - package: MWDAT
+        product: MWDATCore
+      - package: MWDAT
+        product: MWDATDisplay
+      - package: MWDAT
+        product: MWDATInputs
+      - package: MWDAT
+        product: MWDATMockDevice
+schemes:
+  Nabi:
+    build:
+      targets:
+        Nabi: all
+    run:
+      config: Debug
