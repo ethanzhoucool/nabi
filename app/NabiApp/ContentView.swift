@@ -42,21 +42,33 @@ final class NabiModel {
       glasses.don()
       previewDisplay = glasses.services.display
       setStatus("Waiting for the mock glasses")
-      try await waitUntilReady(glasses.deviceIdentifier)
+      do {
+        try await waitUntilReady(glasses.deviceIdentifier)
+      } catch {
+        // Seen on the CI simulator: the mock stays "disconnected". Try the session anyway.
+        NSLog("NABI mock never reported connected; starting the session anyway")
+      }
 
       let session = try Wearables.shared.createSession(
         deviceSelector: SpecificDeviceSelector(device: glasses.deviceIdentifier))
       self.session = session
       let states = session.stateStream()
       try session.start()
-      for await state in states where state == .started { break }
+      setStatus("Starting the session")
+      for await state in states {
+        NSLog("NABI session state: \(state)")
+        if state == .started { break }
+      }
 
       let display = try session.addDisplay()
       self.display = display
       let (displayStates, cont) = AsyncStream.makeStream(of: DisplayState.self)
       tokens.append(display.statePublisher.listen { cont.yield($0) })
       display.start()
-      for await state in displayStates where state == .started { break }
+      for await state in displayStates {
+        NSLog("NABI display state: \(state)")
+        if state == .started { break }
+      }
 
       if let inputs = try session.addInputs() {
         self.inputs = inputs
@@ -104,7 +116,7 @@ final class NabiModel {
 
   private func waitUntilReady(_ id: DeviceIdentifier) async throws {
     let clock = ContinuousClock()
-    let deadline = clock.now.advanced(by: .seconds(10))
+    let deadline = clock.now.advanced(by: .seconds(5))
     var lastLog = clock.now.advanced(by: .seconds(-1))
     while true {
       let device = Wearables.shared.deviceForIdentifier(id)

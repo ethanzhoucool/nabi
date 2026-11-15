@@ -53,7 +53,7 @@ jobs:
           sleep 2
           # --demo makes the app swipe right, pinch to lock, then swipe right again.
           xcrun simctl launch --console-pty "$DEVICE" org.nabi.app --demo > ../shots/console.log 2>&1 &
-          for t in 05 09 13 17; do
+          for t in 06 10 14 18 22; do
             sleep 4
             xcrun simctl io "$DEVICE" screenshot "../shots/t${t}s.png"
           done
