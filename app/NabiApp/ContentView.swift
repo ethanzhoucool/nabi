@@ -32,10 +32,13 @@ final class NabiModel {
     guard session == nil else { return }
     observeDevices()
     do {
-      MockDeviceKit.shared.enable()
+      MockDeviceKit.shared.enable(
+        config: MockDeviceKitConfig(initiallyRegistered: true, initialPermissionsGranted: true))
       let glasses = try MockDeviceKit.shared.pairGlasses(model: .metaRayBanDisplay)
       mock = glasses
+      // Meta's BirdSpotter sample does all three: on, opened, worn.
       glasses.powerOn()
+      glasses.unfold()
       glasses.don()
       previewDisplay = glasses.services.display
       setStatus("Waiting for the mock glasses")
@@ -109,7 +112,7 @@ final class NabiModel {
       if clock.now - lastLog >= .seconds(1) {
         lastLog = clock.now
         if let device {
-          NSLog("NABI device \(id): link \(device.linkState), compatibility \(device.compatibility())")
+          NSLog("NABI device \(id): link \(device.linkState), compatibility \(device.compatibility()), worn \(device.donState), hinge \(device.hingeState)")
         } else {
           NSLog("NABI device \(id) not known yet; registration \(Wearables.shared.registrationState)")
         }
