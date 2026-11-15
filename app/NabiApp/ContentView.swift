@@ -30,6 +30,7 @@ final class NabiModel {
 
   func start() async {
     guard session == nil else { return }
+    observeDevices()
     do {
       MockDeviceKit.shared.enable()
       let glasses = try MockDeviceKit.shared.pairGlasses(model: .metaRayBanDisplay)
@@ -85,12 +86,34 @@ final class NabiModel {
     NSLog("NABI status: \(text)")
   }
 
+  // Meta's sample listens to the device list from launch; do the same.
+  @ObservationIgnored private var devicesTask: Task<Void, Never>?
+
+  func observeDevices() {
+    guard devicesTask == nil else { return }
+    NSLog("NABI registration: \(Wearables.shared.registrationState)")
+    devicesTask = Task {
+      for await ids in Wearables.shared.devicesStream() {
+        NSLog("NABI devices: \(ids)")
+      }
+    }
+  }
+
   private func waitUntilReady(_ id: DeviceIdentifier) async throws {
     let clock = ContinuousClock()
     let deadline = clock.now.advanced(by: .seconds(10))
+    var lastLog = clock.now.advanced(by: .seconds(-1))
     while true {
-      if let device = Wearables.shared.deviceForIdentifier(id),
-         device.linkState == .connected, device.compatibility() == .compatible { return }
+      let device = Wearables.shared.deviceForIdentifier(id)
+      if let device, device.linkState == .connected, device.compatibility() == .compatible { return }
+      if clock.now - lastLog >= .seconds(1) {
+        lastLog = clock.now
+        if let device {
+          NSLog("NABI device \(id): link \(device.linkState), compatibility \(device.compatibility())")
+        } else {
+          NSLog("NABI device \(id) not known yet; registration \(Wearables.shared.registrationState)")
+        }
+      }
       guard clock.now < deadline else { throw ReadyTimeout() }
       try await clock.sleep(for: .milliseconds(50))
     }
