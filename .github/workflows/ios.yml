@@ -47,6 +47,10 @@ jobs:
           APP=build/Build/Products/Debug-iphonesimulator/Nabi.app
           xcrun simctl install "$DEVICE" "$APP"
           mkdir -p ../shots
+          # The toolkit logs through the system log, not stdout, so capture that too.
+          xcrun simctl spawn "$DEVICE" log stream --level debug --style compact \
+            --predicate 'process == "Nabi"' > ../shots/system.log 2>&1 &
+          sleep 2
           # --demo makes the app swipe right, pinch to lock, then swipe right again.
           xcrun simctl launch --console-pty "$DEVICE" org.nabi.app --demo > ../shots/console.log 2>&1 &
           for t in 05 09 13 17; do
