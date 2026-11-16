@@ -42,15 +42,12 @@ final class NabiModel {
       glasses.don()
       previewDisplay = glasses.services.display
       setStatus("Waiting for the mock glasses")
-      do {
-        try await waitUntilReady(glasses.deviceIdentifier)
-      } catch {
-        // Seen on the CI simulator: the mock stays "disconnected". Try the session anyway.
-        NSLog("NABI mock never reported connected; starting the session anyway")
-      }
+      // Meta's CameraAccess sample waits on the selector's active-device stream, not on
+      // Device.linkState: a Device read through deviceForIdentifier never updates on its own.
+      let selector = AutoDeviceSelector(wearables: Wearables.shared)
+      try await waitForActiveDevice(selector)
 
-      let session = try Wearables.shared.createSession(
-        deviceSelector: SpecificDeviceSelector(device: glasses.deviceIdentifier))
+      let session = try Wearables.shared.createSession(deviceSelector: selector)
       self.session = session
       let states = session.stateStream()
       try session.start()
@@ -114,24 +111,24 @@ final class NabiModel {
     }
   }
 
-  private func waitUntilReady(_ id: DeviceIdentifier) async throws {
-    let clock = ContinuousClock()
-    let deadline = clock.now.advanced(by: .seconds(5))
-    var lastLog = clock.now.advanced(by: .seconds(-1))
-    while true {
-      let device = Wearables.shared.deviceForIdentifier(id)
-      if let device, device.linkState == .connected, device.compatibility() == .compatible { return }
-      if clock.now - lastLog >= .seconds(1) {
-        lastLog = clock.now
-        if let device {
-          NSLog("NABI device \(id): link \(device.linkState), compatibility \(device.compatibility()), worn \(device.donState), hinge \(device.hingeState)")
-        } else {
-          NSLog("NABI device \(id) not known yet; registration \(Wearables.shared.registrationState)")
+  private func waitForActiveDevice(_ selector: AutoDeviceSelector) async throws {
+    let found = await withTaskGroup(of: Bool.self) { group in
+      group.addTask {
+        for await id in selector.activeDeviceStream() {
+          NSLog("NABI active device: \(String(describing: id))")
+          if id != nil { return true }
         }
+        return false
       }
-      guard clock.now < deadline else { throw ReadyTimeout() }
-      try await clock.sleep(for: .milliseconds(50))
+      group.addTask {
+        try? await Task.sleep(for: .seconds(10))
+        return false
+      }
+      let first = await group.next() ?? false
+      group.cancelAll()
+      return first
     }
+    if !found { throw ReadyTimeout() }
   }
 
   private func handle(_ event: InputEvent) {

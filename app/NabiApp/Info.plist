@@ -13,13 +13,11 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Nabi</string>
+	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>0.1</string>
-	<key>CFBundleVersion</key>
-	<string>1</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -33,17 +31,31 @@
 			</array>
 		</dict>
 	</array>
-	<!-- Required by the Wearables Device Access Toolkit, including with the mock device -->
+	<key>CFBundleVersion</key>
+	<string>1</string>
 	<key>MWDAT</key>
 	<dict>
 		<key>AppLinkURLScheme</key>
 		<string>nabi://</string>
-		<key>MetaAppID</key>
-		<string>$(META_APP_ID)</string>
 		<key>ClientToken</key>
 		<string>$(CLIENT_TOKEN)</string>
+		<key>MetaAppID</key>
+		<string>$(META_APP_ID)</string>
 		<key>TeamID</key>
 		<string>$(DEVELOPMENT_TEAM)</string>
+	</dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Nabi uses Bluetooth to connect to your glasses.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_bonjour._tcp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Nabi uses the local network to connect to your glasses and the robot arm.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
 	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
@@ -52,26 +64,12 @@
 		<string>bluetooth-peripheral</string>
 		<string>external-accessory</string>
 	</array>
-	<!-- Bluetooth Classic link; the toolkit checks for it even on the mock device -->
+	<key>UILaunchScreen</key>
+	<dict/>
 	<key>UISupportedExternalAccessoryProtocols</key>
 	<array>
 		<string>com.meta.ar.wearable</string>
 	</array>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Nabi uses Bluetooth to connect to your glasses.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>Nabi uses the local network to connect to your glasses and the robot arm.</string>
-	<key>NSBonjourServices</key>
-	<array>
-		<string>_bonjour._tcp</string>
-	</array>
-	<key>UIApplicationSceneManifest</key>
-	<dict>
-		<key>UIApplicationSupportsMultipleScenes</key>
-		<false/>
-	</dict>
-	<key>UILaunchScreen</key>
-	<dict/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

@@ -12,10 +12,37 @@ targets:
     type: application
     platform: iOS
     sources: [NabiApp]
+    # XcodeGen rewrites these two files from the properties below on every
+    # `xcodegen generate`, so edit the keys here, not in the .plist files.
     info:
       path: NabiApp/Info.plist
+      properties:
+        CFBundleDisplayName: Nabi
+        CFBundleShortVersionString: "0.1"
+        CFBundleVersion: "1"
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Editor
+            CFBundleURLName: $(PRODUCT_BUNDLE_IDENTIFIER)
+            CFBundleURLSchemes: [nabi]
+        # Required by the Wearables Device Access Toolkit, including with the mock device.
+        MWDAT:
+          AppLinkURLScheme: "nabi://"
+          MetaAppID: $(META_APP_ID)
+          ClientToken: $(CLIENT_TOKEN)
+          TeamID: $(DEVELOPMENT_TEAM)
+        UIBackgroundModes: [processing, bluetooth-central, bluetooth-peripheral, external-accessory]
+        UISupportedExternalAccessoryProtocols: [com.meta.ar.wearable]
+        NSBluetoothAlwaysUsageDescription: Nabi uses Bluetooth to connect to your glasses.
+        NSLocalNetworkUsageDescription: Nabi uses the local network to connect to your glasses and the robot arm.
+        NSBonjourServices: [_bonjour._tcp]
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
     entitlements:
       path: NabiApp/Nabi.entitlements
+      properties:
+        keychain-access-groups: [$(AppIdentifierPrefix)$(CFBundleIdentifier)]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: org.nabi.app
