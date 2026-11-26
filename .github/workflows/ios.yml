@@ -51,8 +51,10 @@ jobs:
           xcrun simctl spawn "$DEVICE" log stream --level debug --style compact \
             --predicate 'process == "Nabi"' > ../shots/system.log 2>&1 &
           sleep 2
-          # --demo makes the app swipe right, pinch to lock, then swipe right again.
-          xcrun simctl launch --console-pty "$DEVICE" org.nabi.app --demo > ../shots/console.log 2>&1 &
+          # Vision's models can't run in the simulator, so --fake-vision supplies made-up
+          # objects (a drifting cup, and a mouse at the center from 8 s to 20 s).
+          # --demo pinches to lock at 6 s and pinches again to release at 10 s.
+          xcrun simctl launch --console-pty "$DEVICE" org.nabi.app --fake-vision --demo > ../shots/console.log 2>&1 &
           for t in 06 10 14 18 22; do
             sleep 4
             xcrun simctl io "$DEVICE" screenshot "../shots/t${t}s.png"

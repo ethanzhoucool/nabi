@@ -50,6 +50,8 @@
 	<array>
 		<string>_bonjour._tcp</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>With --mock on an iPhone, the mock glasses use the phone's camera as their camera.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Nabi uses the local network to connect to your glasses and the robot arm.</string>
 	<key>UIApplicationSceneManifest</key>

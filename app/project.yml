@@ -33,6 +33,7 @@ targets:
         # Same as Meta's DisplayAccess sample.
         UIBackgroundModes: [processing, bluetooth-central, bluetooth-peripheral]
         NSBluetoothAlwaysUsageDescription: Nabi uses Bluetooth to connect to your glasses.
+        NSCameraUsageDescription: With --mock on an iPhone, the mock glasses use the phone's camera as their camera.
         NSLocalNetworkUsageDescription: Nabi uses the local network to connect to your glasses and the robot arm.
         NSBonjourServices: [_bonjour._tcp]
         UIApplicationSceneManifest:
@@ -63,6 +64,8 @@ targets:
         product: MWDATInputs
       - package: MWDAT
         product: MWDATMockDevice
+      - package: MWDAT
+        product: MWDATCamera
 schemes:
   Nabi:
     build:

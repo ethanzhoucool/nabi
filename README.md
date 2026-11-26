@@ -4,7 +4,7 @@ Look at an object on the table, pinch your fingers, and a robot arm picks it up 
 
 Nabi is an open-source robot arm you control by looking and pinching, with nothing to hold and nothing to type. Meta Ray-Ban Display glasses see what you're facing, and the Meta Neural Band wristband picks up the pinch. The arm is the open-source SO-101. All of the parts together cost just under CA$2,000.
 
-In November 2026 Nabi received a CA$2,000 grant from Western University to buy the parts, and the build is starting. The arm and the object detection are not built yet. The repository holds the design, a priced parts list, a [build plan](docs/plan.md) with dates, a first iPhone app in [`app/`](#iphone-app) and the arm control setup in [`robot/`](robot/README.md). More code and CAD files will be added as the build goes on.
+In November 2026 Nabi received a CA$2,000 grant from Western University to buy the parts, and the build is starting. The arm is not built yet. The repository holds the design, a priced parts list, a [build plan](docs/plan.md) with dates, an iPhone app in [`app/`](#iphone-app) that finds and names the object you're facing and the arm control setup in [`robot/`](robot/README.md). More code and CAD files will be added as the build goes on.
 
 ## Why
 
@@ -18,7 +18,7 @@ Choosing objects for a robot by looking at them is not a new idea. A 2018 system
 
 ```mermaid
 flowchart LR
-    band[Meta Neural Band] -- pinch, swipe --> glasses[Ray-Ban Display<br/>camera and display]
+    band[Meta Neural Band] -- pinch --> glasses[Ray-Ban Display<br/>camera and display]
     glasses <-- Bluetooth --> phone[iPhone app<br/>object detection]
     phone <-- Wi-Fi --> laptop[Laptop<br/>matching and motion]
     cam[Overhead camera] -- USB --> laptop
@@ -26,7 +26,7 @@ flowchart LR
 ```
 
 1. The iPhone app streams video from the glasses and runs an object detector on it. The glasses have no eye tracking, so you aim with your head, like a red dot sight. The object behind the display becomes the candidate.
-2. A dot and a label appear over the candidate in the glasses' display. Swiping moves the dot to the next object. A pinch locks it, and the dot stays on the object while the arm works.
+2. A dot and a label appear over that object in the glasses' display. The dot stays on it until it leaves the display or another object is more directly in front. A pinch locks it, and the dot stays on the object while the arm works.
 3. A camera above the table finds the same object. Printed ArUco markers on the table turn its position in the image into table coordinates.
 4. The arm reaches down, grips the object and carries it to a fixed handover point at table height.
 5. When the user pinches again, the gripper opens. A pinch while the arm is moving stops it, and so does a stop button in the phone app.
@@ -35,28 +35,74 @@ The first version uses scripted grasps. A learned grasp policy, trained with [Le
 
 ## iPhone app
 
-The first app in `app/` tests the selection step on its own. The glasses' display shows a red dot over one of three candidate objects: cup, phone and keys. A Neural Band swipe (nav left or right) moves the dot, and a pinch (select) locks it. Object detection, the camera and the robot arm come later, so the candidates are fixed for now.
+The app in `app/` tests the selection step on its own, without the arm. The glasses' camera streams to the phone (`MWDATCamera`, low resolution, 15 fps). Apple Vision on the phone finds the object straight ahead and names it, and the glasses show one red dot on that object with its label. A pinch (Neural Band select) locks the target, and another pinch releases it. Swipes are not used.
 
-The phone screen shows the status, the locked or current candidate and three buttons (Swipe left, Pinch, Swipe right) that do the same as the Neural Band. With the mock glasses the buttons go through the mock's input service, so they reach the app the same way real swipes and pinches would. The dot is drawn into a 600x600 image on a black background, since black is see-through on the real glasses.
+The glasses have no eye tracking, so "looking at" means a gaze point in the camera image. It is the center by default and can be moved with the calibration sliders on the phone.
 
-It is built on the [Meta Wearables Device Access Toolkit](https://github.com/facebook/meta-wearables-dat-ios) (DAT) for iOS, version 1.0.1, using `MWDATCore`, `MWDATDisplay`, `MWDATInputs` and `MWDATMockDevice`. It needs iOS 17.2 or later.
+It is built on the [Meta Wearables Device Access Toolkit](https://github.com/facebook/meta-wearables-dat-ios) (DAT) for iOS, version 1.0.1, using `MWDATCore`, `MWDATCamera`, `MWDATDisplay`, `MWDATInputs` and `MWDATMockDevice`. It needs iOS 17.2 or later.
+
+### Finding the object
+
+[`GazeVision.swift`](app/NabiApp/GazeVision.swift) uses only Apple Vision, so there is nothing to download:
+
+1. Objectness saliency proposes boxes around distinct objects. A box covering most of the frame is ignored.
+2. The box at the gaze point, or the nearest one to it, is the candidate. With no boxes, a square around the gaze point is used instead.
+3. That region is cropped and classified against Vision's 1,303 built-in labels. Broad labels that name a scene, a room, a material or a category are skipped.
+
+Frames are redrawn at most 480 pixels wide, and Vision runs on one frame at a time, at most about 8 times a second. Frames that arrive while it is busy are skipped.
+
+On a Mac, Vision labeled the plant in Meta's sample plant video and photos consistently, at about 17 ms per frame. This was a Mac test, not a test on the phone.
+
+### Keeping the dot on one object
+
+[`TargetTracker.swift`](app/NabiApp/TargetTracker.swift) makes the dot stick to an object. It switches to a different one only when:
+
+- the current object leaves the display square,
+- the current object is not seen for 1.2 s, or
+- another object is clearly more directly in front (closer to the gaze point than 0.6 times the current object's distance) for 3 analyses in a row.
+
+A locked target never switches. If a locked target is lost, it is released. The label changes only when a majority of the last 5 frames agree.
+
+### What the glasses show
+
+Sending to the glasses' display is slow over Bluetooth. Measured on real Ray-Ban Display glasses:
+
+| Display update | Time per update |
+|---|---|
+| Full 600x600 image | about 650 ms |
+| 300x85 image with native text | about 200 ms |
+| Native text only | about 70 ms |
+
+So the dot is drawn into a small 240x150 image on a black background (black is see-through on the glasses), and the label and a "Pinch to lock" or "Pinch to release" line are native text. Only one frame is in flight at a time, and frames that would not look different from the last one are skipped. A locked target gets a white ring around the dot.
+
+Neural Band events that arrive more than 400 ms late are dropped, so a delayed pinch can't lock the wrong object. Over Bluetooth the band's events can stall and then arrive in a burst.
+
+### Phone screen
+
+The phone shows the status, the camera frame with the target's box and the gaze point, a preview of the glasses' display, the target's label and confidence, and how long Vision took. A Lock (pinch) button does the same as a Neural Band pinch. With the mock glasses it goes through the mock's input service, so it reaches the app the same way a real pinch would.
+
+**Calibrate the dot** has sliders for gaze x and y, spread (scale) and dot offset x and y. Look at an object and move them until the dot on the glasses sits on it. The values are saved on the phone.
 
 ### Mock or real glasses
 
 - **iOS Simulator:** always uses mock glasses from `MockDeviceKit`, set to the Ray-Ban Display model. The phone screen shows a preview of the mock display. The app also starts a test server on port 9000 (`http://127.0.0.1:9000/`) for Meta's Display Simulator Chrome extension.
-- **iPhone:** uses real glasses, unless the app is launched with `--mock`.
-- **`--demo`:** after the display starts, the app swipes right, pinches, then swipes right again. CI uses this.
+- **iPhone:** uses real glasses, unless the app is launched with `--mock`. With `--mock` on an iPhone, the mock camera uses the phone's back camera.
+- **`--feed <video path>`:** gives the mock camera a video file to show.
+- **`--fake-vision`:** Vision's neural models don't run in the iOS Simulator. With the default device it fails with "Failed to create espresso context", on the CPU it gives the same wrong label for every image, and the GPU is refused. So in the simulator this flag supplies made-up objects instead: a cup that drifts side to side, and a mouse at the center from 8 s to 20 s.
+- **`--demo`:** pinches to lock at 6 s and pinches again to release at 10 s. CI runs the app with `--fake-vision --demo`.
 
 ### Real glasses setup
 
 1. In the Meta AI app, turn on Developer Mode: Settings > App Info, then tap App version 5 times.
 2. Open Nabi and tap **Connect glasses**. This opens Meta AI, which sends you back to Nabi through the `nabi://` link.
-3. Nabi waits for the glasses to connect, then starts the session and the display.
+3. Nabi waits for the glasses to connect, then starts the session, the display and the Neural Band input.
+4. If the camera permission is not granted yet, tap **Allow camera**. Meta AI asks you to let Nabi use the glasses camera.
 
-`MetaAppID` is set to `"0"`, so no Meta app ID or client token is needed in Developer Mode. Meta staff have said that Inputs and Display need no Developer Center step in Developer Mode ([discussion #352](https://github.com/meta/meta-wearables-dat-ios/discussions/352), [discussion #193](https://github.com/meta/meta-wearables-dat-ios/discussions/193)). If the glasses refuse Neural Band input anyway, the app says so and the phone buttons still work.
+`MetaAppID` is set to `"0"`, so no Meta app ID or client token is needed in Developer Mode. Meta staff have said that Inputs and Display need no Developer Center step in Developer Mode ([discussion #352](https://github.com/meta/meta-wearables-dat-ios/discussions/352), [discussion #193](https://github.com/meta/meta-wearables-dat-ios/discussions/193)). If the glasses refuse Neural Band input anyway, the app says so and the phone button still works.
 
 Known limits:
 
+- Meta's camera sample also uses the Wi-Fi Hotspot and Access Wi-Fi Information entitlements, which free (personal) Apple developer teams can't sign. Nabi is built without them. It is not tested yet whether the camera stream works without them on real glasses. If it fails with `deviceNotConnected`, a paid Apple developer team is likely needed.
 - Real glasses never send Back to apps. The Neural Band Back gesture closes the app on the glasses and ends the session ([issue #349](https://github.com/meta/meta-wearables-dat-ios/issues/349)).
 - Motion needs glasses firmware 129 or later ([issue #329](https://github.com/meta/meta-wearables-dat-ios/issues/329)). The app does not use Motion yet.
 - Inputs and Motion are beta, available on the development and beta release channels only.
@@ -87,7 +133,7 @@ xcodebuild -project Nabi.xcodeproj -scheme Nabi \
   -derivedDataPath ~/Library/Developer/NabiBuild \
   build
 xcrun simctl install booted ~/Library/Developer/NabiBuild/Build/Products/Debug-iphonesimulator/Nabi.app
-xcrun simctl launch booted org.nabi.app          # add --demo for the scripted run
+xcrun simctl launch booted org.nabi.app --fake-vision   # add --demo for the scripted run
 ```
 
 iPhone (pass your own Apple developer team ID):
@@ -109,7 +155,7 @@ Then install `~/Library/Developer/NabiBuild/Build/Products/Debug-iphoneos/Nabi.a
 
 1. Installs XcodeGen and generates the project.
 2. Builds the app for the iOS Simulator.
-3. Boots an iPhone simulator, installs the app and launches it with `--demo`.
+3. Boots an iPhone simulator, installs the app and launches it with `--fake-vision --demo`.
 4. Takes five screenshots, 4 seconds apart, and saves the app's console output and system log.
 5. Uploads the screenshots and logs as the `simulator-screenshots` artifact, even if an earlier step failed.
 
