@@ -76,8 +76,10 @@ final class NabiModel {
 
       if let inputs = try session.addInputs() {
         self.inputs = inputs
-        // On real glasses Inputs needs approval in Meta's Wearables Developer Center;
-        // without it this reports permissionDenied and the phone buttons still work.
+        // Inputs needs no Developer Center step in Developer Mode (Meta, discussion #352).
+        // If the glasses refuse it anyway this reports permissionDenied; the phone buttons
+        // still work. Real glasses never send Back: the Neural Band Back gesture closes the
+        // app on the glasses and ends the session (Meta, issue #349).
         tokens.append(inputs.errorPublisher.listen { [weak self] error in
           NSLog("NABI inputs error: \(error)")
           Task { @MainActor in
