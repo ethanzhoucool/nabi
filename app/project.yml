@@ -30,8 +30,8 @@ targets:
           MetaAppID: $(META_APP_ID)
           ClientToken: $(CLIENT_TOKEN)
           TeamID: $(DEVELOPMENT_TEAM)
-        UIBackgroundModes: [processing, bluetooth-central, bluetooth-peripheral, external-accessory]
-        UISupportedExternalAccessoryProtocols: [com.meta.ar.wearable]
+        # Same as Meta's DisplayAccess sample.
+        UIBackgroundModes: [processing, bluetooth-central, bluetooth-peripheral]
         NSBluetoothAlwaysUsageDescription: Nabi uses Bluetooth to connect to your glasses.
         NSLocalNetworkUsageDescription: Nabi uses the local network to connect to your glasses and the robot arm.
         NSBonjourServices: [_bonjour._tcp]
@@ -49,8 +49,8 @@ targets:
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: NO
         TARGETED_DEVICE_FAMILY: "1"
-        CODE_SIGN_STYLE: Manual
-        CODE_SIGN_IDENTITY: "-"
+        # Automatic signing. For an iPhone build pass DEVELOPMENT_TEAM=<your team ID>.
+        CODE_SIGN_STYLE: Automatic
         # No Meta app ID is needed with the mock device; "0" means "none".
         META_APP_ID: "0"
         CLIENT_TOKEN: ""

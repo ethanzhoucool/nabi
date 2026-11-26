@@ -12,6 +12,19 @@ struct NabiApp: App {
   }
 
   var body: some Scene {
-    WindowGroup { ContentView() }
+    WindowGroup {
+      ContentView()
+        // The Meta AI app returns here after registration through the nabi:// link.
+        .onOpenURL { url in
+          Task {
+            do {
+              let handled = try await Wearables.shared.handleUrl(url)
+              NSLog("NABI handled url \(url): \(handled)")
+            } catch {
+              NSLog("NABI handleUrl failed: \(error)")
+            }
+          }
+        }
+    }
   }
 }

@@ -5,7 +5,8 @@ import MWDATDisplay
 import MWDATInputs
 import MWDATMockDevice
 
-// First Nabi app: runs against a mock Meta Ray-Ban Display (no glasses needed).
+// First Nabi app: runs against real Meta Ray-Ban Display glasses on an iPhone, or a mock
+// pair in the simulator.
 // The glasses' display shows a red dot over one of three candidate objects.
 // Swipe left/right (Neural Band nav) moves the dot, a pinch (select) locks it.
 // Object detection and the camera come later; the candidates are fixed for now.
@@ -28,20 +29,26 @@ final class NabiModel {
   @ObservationIgnored private var tokens: [any AnyListenerToken] = []
   @ObservationIgnored private var inputTask: Task<Void, Never>?
 
+  // The simulator always uses the mock glasses. On an iPhone the app talks to real glasses
+  // through the Meta AI app, unless it is launched with --mock.
+  #if targetEnvironment(simulator)
+  let usesMock = true
+  #else
+  let usesMock = CommandLine.arguments.contains("--mock")
+  #endif
+
+  var needsRegistration = false
+
   func start() async {
     guard session == nil else { return }
     observeDevices()
     do {
-      MockDeviceKit.shared.enable(
-        config: MockDeviceKitConfig(initiallyRegistered: true, initialPermissionsGranted: true))
-      let glasses = try MockDeviceKit.shared.pairGlasses(model: .metaRayBanDisplay)
-      mock = glasses
-      // Meta's BirdSpotter sample does all three: on, opened, worn.
-      glasses.powerOn()
-      glasses.unfold()
-      glasses.don()
-      previewDisplay = glasses.services.display
-      setStatus("Waiting for the mock glasses")
+      if usesMock {
+        try startMock()
+      } else {
+        try await waitForRegistration()
+      }
+      setStatus(usesMock ? "Waiting for the mock glasses" : "Waiting for your glasses to connect")
       // Meta's CameraAccess sample waits on the selector's active-device stream, not on
       // Device.linkState: a Device read through deviceForIdentifier never updates on its own.
       let selector = AutoDeviceSelector(wearables: Wearables.shared)
@@ -78,11 +85,13 @@ final class NabiModel {
       }
 
       // Chrome preview at http://127.0.0.1:9000/ with Meta's Display Simulator extension.
-      do {
-        let port = try await MockDeviceKit.shared.startTestServer(port: 9000)
-        NSLog("NABI test server on port \(port)")
-      } catch {
-        NSLog("NABI test server failed: \(error)")
+      if usesMock {
+        do {
+          let port = try await MockDeviceKit.shared.startTestServer(port: 9000)
+          NSLog("NABI test server on port \(port)")
+        } catch {
+          NSLog("NABI test server failed: \(error)")
+        }
       }
 
       setStatus("Display on")
@@ -90,6 +99,43 @@ final class NabiModel {
       if CommandLine.arguments.contains("--demo") { runDemo() }
     } catch {
       setStatus("Error: \(error)")
+    }
+  }
+
+  private func startMock() throws {
+    MockDeviceKit.shared.enable(
+      config: MockDeviceKitConfig(initiallyRegistered: true, initialPermissionsGranted: true))
+    let glasses = try MockDeviceKit.shared.pairGlasses(model: .metaRayBanDisplay)
+    mock = glasses
+    // Meta's BirdSpotter sample does all three: on, opened, worn.
+    glasses.powerOn()
+    glasses.unfold()
+    glasses.don()
+    previewDisplay = glasses.services.display
+  }
+
+  // Real glasses: the app has to be registered with the Meta AI app first. With Developer
+  // Mode on in Meta AI, no Meta app ID is needed. Registration opens Meta AI, which sends
+  // the user back through the nabi:// link (handled in NabiApp).
+  private func waitForRegistration() async throws {
+    let states = Wearables.shared.registrationStateStream()
+    if Wearables.shared.registrationState == .registered { return }
+    needsRegistration = true
+    setStatus("Tap Connect glasses. Developer Mode must be on in the Meta AI app.")
+    for await state in states {
+      NSLog("NABI registration state: \(state)")
+      if state == .registered { break }
+    }
+    needsRegistration = false
+  }
+
+  func connectGlasses() {
+    Task {
+      do {
+        try await Wearables.shared.startRegistration()
+      } catch {
+        setStatus("Registration failed: \(error)")
+      }
     }
   }
 
@@ -112,6 +158,7 @@ final class NabiModel {
   }
 
   private func waitForActiveDevice(_ selector: AutoDeviceSelector) async throws {
+    let usesMock = self.usesMock
     let found = await withTaskGroup(of: Bool.self) { group in
       group.addTask {
         for await id in selector.activeDeviceStream() {
@@ -121,7 +168,7 @@ final class NabiModel {
         return false
       }
       group.addTask {
-        try? await Task.sleep(for: .seconds(10))
+        try? await Task.sleep(for: .seconds(usesMock ? 10 : 60))
         return false
       }
       let first = await group.next() ?? false
@@ -158,9 +205,9 @@ final class NabiModel {
 
   // Stand-ins for the Neural Band: these go through the mock glasses' input service,
   // so they reach the app the same way real swipes and pinches would.
-  func swipeLeft() { if inputs != nil { mock?.services.input.navLeft() } else { move(-1) } }
-  func swipeRight() { if inputs != nil { mock?.services.input.navRight() } else { move(1) } }
-  func pinch() { if inputs != nil { mock?.services.input.select() } else { lockCurrent() } }
+  func swipeLeft() { if inputs != nil, let mock { mock.services.input.navLeft() } else { move(-1) } }
+  func swipeRight() { if inputs != nil, let mock { mock.services.input.navRight() } else { move(1) } }
+  func pinch() { if inputs != nil, let mock { mock.services.input.select() } else { lockCurrent() } }
 
   // Used by CI: swipe right, pinch, swipe left, with time for a screenshot after each.
   private func runDemo() {
@@ -233,9 +280,18 @@ struct ContentView: View {
     VStack(spacing: 16) {
       SwiftUI.Text("Nabi").font(.largeTitle.bold())
       SwiftUI.Text(model.status).font(.footnote).foregroundStyle(.secondary)
+        .multilineTextAlignment(.center)
+      if model.needsRegistration {
+        SwiftUI.Button("Connect glasses") { model.connectGlasses() }
+          .buttonStyle(.borderedProminent)
+      }
       ZStack {
         Color.black
-        if let display = model.previewDisplay { DisplayPreview(display: display) }
+          if let display = model.previewDisplay {
+          DisplayPreview(display: display)
+        } else if !model.usesMock {
+          SwiftUI.Text("Look at your glasses").foregroundStyle(.white)
+        }
       }
       .aspectRatio(1, contentMode: .fit)
       .clipShape(RoundedRectangle(cornerRadius: 12))
