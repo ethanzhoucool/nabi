@@ -219,7 +219,7 @@ final class NabiModel {
   func swipeRight() { if inputs != nil, let mock { mock.services.input.navRight() } else { move(1) } }
   func pinch() { if inputs != nil, let mock { mock.services.input.select() } else { lockCurrent() } }
 
-  // Used by CI: swipe right, pinch, swipe left, with time for a screenshot after each.
+  // Used by CI: swipe right, pinch, swipe right, with time for a screenshot after each.
   private func runDemo() {
     Task { @MainActor [weak self] in
       try? await Task.sleep(for: .seconds(2)); self?.swipeRight()

@@ -4,7 +4,7 @@ Look at an object on the table, pinch your fingers, and a robot arm picks it up 
 
 Nabi is an open-source robot arm you control by looking and pinching, with nothing to hold and nothing to type. Meta Ray-Ban Display glasses see what you're facing, and the Meta Neural Band wristband picks up the pinch. The arm is the open-source SO-101. All of the parts together cost just under CA$2,000.
 
-In November 2026 Nabi received a CA$2,000 grant from Western University to buy the parts, and the build is starting. Nothing has been built yet. For now the repository holds the design, a priced parts list and a [build plan](docs/plan.md) with dates. Code and CAD files will be added as the build goes on.
+In November 2026 Nabi received a CA$2,000 grant from Western University to buy the parts, and the build is starting. The arm and the object detection are not built yet. The repository holds the design, a priced parts list, a [build plan](docs/plan.md) with dates, a first iPhone app in [`app/`](#iphone-app) and the arm control setup in [`robot/`](robot/README.md). More code and CAD files will be added as the build goes on.
 
 ## Why
 
@@ -32,6 +32,88 @@ flowchart LR
 5. When the user pinches again, the gripper opens. A pinch while the arm is moving stops it, and so does a stop button in the phone app.
 
 The first version uses scripted grasps. A learned grasp policy, trained with [LeRobot](https://github.com/huggingface/lerobot), comes after the scripted version works end to end. [docs/design.md](docs/design.md) explains each of these choices.
+
+## iPhone app
+
+The first app in `app/` tests the selection step on its own. The glasses' display shows a red dot over one of three candidate objects: cup, phone and keys. A Neural Band swipe (nav left or right) moves the dot, and a pinch (select) locks it. Object detection, the camera and the robot arm come later, so the candidates are fixed for now.
+
+The phone screen shows the status, the locked or current candidate and three buttons (Swipe left, Pinch, Swipe right) that do the same as the Neural Band. With the mock glasses the buttons go through the mock's input service, so they reach the app the same way real swipes and pinches would. The dot is drawn into a 600x600 image on a black background, since black is see-through on the real glasses.
+
+It is built on the [Meta Wearables Device Access Toolkit](https://github.com/facebook/meta-wearables-dat-ios) (DAT) for iOS, version 1.0.1, using `MWDATCore`, `MWDATDisplay`, `MWDATInputs` and `MWDATMockDevice`. It needs iOS 17.2 or later.
+
+### Mock or real glasses
+
+- **iOS Simulator:** always uses mock glasses from `MockDeviceKit`, set to the Ray-Ban Display model. The phone screen shows a preview of the mock display. The app also starts a test server on port 9000 (`http://127.0.0.1:9000/`) for Meta's Display Simulator Chrome extension.
+- **iPhone:** uses real glasses, unless the app is launched with `--mock`.
+- **`--demo`:** after the display starts, the app swipes right, pinches, then swipes right again. CI uses this.
+
+### Real glasses setup
+
+1. In the Meta AI app, turn on Developer Mode: Settings > App Info, then tap App version 5 times.
+2. Open Nabi and tap **Connect glasses**. This opens Meta AI, which sends you back to Nabi through the `nabi://` link.
+3. Nabi waits for the glasses to connect, then starts the session and the display.
+
+`MetaAppID` is set to `"0"`, so no Meta app ID or client token is needed in Developer Mode. Meta staff have said that Inputs and Display need no Developer Center step in Developer Mode ([discussion #352](https://github.com/meta/meta-wearables-dat-ios/discussions/352), [discussion #193](https://github.com/meta/meta-wearables-dat-ios/discussions/193)). If the glasses refuse Neural Band input anyway, the app says so and the phone buttons still work.
+
+Known limits:
+
+- Real glasses never send Back to apps. The Neural Band Back gesture closes the app on the glasses and ends the session ([issue #349](https://github.com/meta/meta-wearables-dat-ios/issues/349)).
+- Motion needs glasses firmware 129 or later ([issue #329](https://github.com/meta/meta-wearables-dat-ios/issues/329)). The app does not use Motion yet.
+- Inputs and Motion are beta, available on the development and beta release channels only.
+
+### Project setup
+
+The Xcode project is generated with [XcodeGen](https://github.com/yonaskolb/XcodeGen) from `app/project.yml`. `Nabi.xcodeproj` is gitignored, so generate it after cloning or after changing `project.yml`:
+
+```bash
+cd app
+brew install xcodegen   # once
+xcodegen generate
+```
+
+Info.plist keys live in `project.yml` under `info.properties`. XcodeGen rewrites `NabiApp/Info.plist` on every `xcodegen generate`, so edits made to the plist directly are lost. The same goes for the entitlements file.
+
+### Build
+
+Keep derived data outside `~/Desktop`, for example in `~/Library/Developer/NabiBuild`. Files under Desktop can pick up extended attributes that break code signing with "resource fork, Finder information, or similar detritus not allowed".
+
+Simulator:
+
+```bash
+cd app
+xcodebuild -project Nabi.xcodeproj -scheme Nabi \
+  -sdk iphonesimulator -configuration Debug \
+  -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath ~/Library/Developer/NabiBuild \
+  build
+xcrun simctl install booted ~/Library/Developer/NabiBuild/Build/Products/Debug-iphonesimulator/Nabi.app
+xcrun simctl launch booted org.nabi.app          # add --demo for the scripted run
+```
+
+iPhone (pass your own Apple developer team ID):
+
+```bash
+cd app
+xcodebuild -project Nabi.xcodeproj -scheme Nabi \
+  -configuration Debug -destination 'generic/platform=iOS' \
+  -derivedDataPath ~/Library/Developer/NabiBuild \
+  -allowProvisioningUpdates DEVELOPMENT_TEAM=<your team> \
+  build
+```
+
+Then install `~/Library/Developer/NabiBuild/Build/Products/Debug-iphoneos/Nabi.app` on the phone, for example with `xcrun devicectl device install app --device <device> <path to Nabi.app>`. With a free Apple ID team, installed apps expire after 7 days and need to be installed again.
+
+### CI
+
+[`.github/workflows/ios.yml`](.github/workflows/ios.yml) runs on pushes and pull requests that change `app/` or the workflow, and can be started by hand. On a `macos-26` runner (toolkit 1.0.1 needs Xcode 26.4 or newer) it:
+
+1. Installs XcodeGen and generates the project.
+2. Builds the app for the iOS Simulator.
+3. Boots an iPhone simulator, installs the app and launches it with `--demo`.
+4. Takes five screenshots, 4 seconds apart, and saves the app's console output and system log.
+5. Uploads the screenshots and logs as the `simulator-screenshots` artifact, even if an earlier step failed.
+
+It only builds for the simulator. It does not sign the app or run tests.
 
 ## Hardware
 
@@ -85,11 +167,11 @@ The phases, dates and decision points are in [docs/plan.md](docs/plan.md).
 ## Repository layout
 
 ```
+app/        iPhone app (XcodeGen project, Swift sources)
 docs/       design notes, build plan, test plan, safety
 hardware/   bill of materials, wiring, custom parts
+robot/      arm control with LeRobot, safety limit checks and tests
 ```
-
-The iPhone app will live in `app/` and the arm control code in `robot/`.
 
 ## License
 
