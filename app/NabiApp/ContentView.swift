@@ -76,6 +76,14 @@ final class NabiModel {
 
       if let inputs = try session.addInputs() {
         self.inputs = inputs
+        // On real glasses Inputs needs approval in Meta's Wearables Developer Center;
+        // without it this reports permissionDenied and the phone buttons still work.
+        tokens.append(inputs.errorPublisher.listen { [weak self] error in
+          NSLog("NABI inputs error: \(error)")
+          Task { @MainActor in
+            self?.setStatus("Neural Band input unavailable (\(error)). Use the buttons below.")
+          }
+        })
         let events = inputs.events
         inputTask = Task { [weak self] in
           for await event in events { self?.handle(event) }
